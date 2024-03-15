@@ -20,7 +20,7 @@
  * 3ºnumber  MAINTENANCE release number (bugfixes only)
  * 4ºnumber  BUILD NUMBER (Hardware release)
  */
-#define FIRMWARE_VERSION (char *)"0.0.1"
+#define FIRMWARE_VERSION (char *)"0.1.2"
 #define MANUFACTORY (char *)"RICARDOPASCHOALI"
 #define MAC_ADDRESS (char *)"mac"
 
@@ -70,6 +70,8 @@
 #define HUMIDITY (char *)"humidity"
 #define PRESSURE (char *)"pressure"
 #define DEWPOINT (char *)"dewPoint"
+#define UPDATE_STATUS (char *)"updateStatus"
+#define OTA_URL (char *)"otaUrl"
 
 /**
  * @brief AES Crypto config
@@ -89,7 +91,7 @@
  * @brief NVS Models config
  *
  */
-#define DEFAULT_MODEL (char *)"METEOR-C3" // default model
+#define DEFAULT_MODEL (char *)"METEOR_Monitor" // default model
 
 #define WAKEUP_TOUCH_TRESHOLD (char *)"wakeupTreshold" // 900
                                                        // #wake up setpoint

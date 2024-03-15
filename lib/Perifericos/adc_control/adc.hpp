@@ -40,6 +40,3 @@ namespace ADC
         int GetVoltage();
     };
 } // namespace ADC
-
-// Implementações dos métodos da classe AdcController devem ser feitas no arquivo .cpp correspondente.
-// Estas implementações devem incluir a inicialização do ADC, calibração (se necessário) e leitura dos valores brutos ou calibrados.

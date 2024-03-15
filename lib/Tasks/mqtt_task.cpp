@@ -11,7 +11,7 @@ void vTask_MQTT_auto_publish(void *pvParameters)
 
         mqtt_publish_instance.publish_all();
 
-        vTaskDelay(20 * PORT_TICK_PERIOD_SECONDS);
+        vTaskDelay(40 * PORT_TICK_PERIOD_SECONDS);
     }
 }
 

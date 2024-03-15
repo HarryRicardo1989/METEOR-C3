@@ -5,12 +5,13 @@
 #include "mqtt5_client.h"
 #include "esp_log.h"
 #include "sleep_timer.h"
+#include "tasks_common.h"
+
 #include "connections.h"
 #include "rw_data.h"
 
 namespace PROTOCOL
 {
-#define TAG "MQTT_EVENT"
 
     class MqttClient
     {
@@ -30,6 +31,7 @@ namespace PROTOCOL
         void subscribe(const char *topic);
         void unsubscribe(const char *topic);
         void publish(const char *topic, char *data, int qos, int retain);
+        void concat_string(char *resultado, char *str1, char *str2);
 
     private:
         MqttClient(); // Construtor privado

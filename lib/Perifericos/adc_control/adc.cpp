@@ -17,12 +17,10 @@ namespace ADC
 
         if (_calEnabled)
         {
-            // Inicializar o esquema de calibração aqui
             cali_config.unit_id = adc_oneshot_unit;
             cali_config.atten = adc_oneshot_attenuation;
             cali_config.bitwidth = adc_oneshot_bitwidth;
-            cali_scheme_mask = ADC_CALI_SCHEME_VER_CURVE_FITTING; // Verifique a documentação para a constante correta
-            // A linha abaixo foi removida pois a estrutura e/ou a constante podem estar incorretas ou desatualizadas
+            cali_scheme_mask = ADC_CALI_SCHEME_VER_CURVE_FITTING;
             err = adc_cali_create_scheme_curve_fitting(&cali_config, &cali_handle);
             if (err != ESP_OK)
             {
@@ -97,8 +95,6 @@ namespace ADC
 
     bool AdcController::_checkCalFuse()
     {
-        // Simplifique ou remova esta função se a verificação de calibração não for mais necessária
-        // Ou ajuste para usar a nova API de calibração, se disponível
-        return true; // Considerando que a calibração específica não é mais necessária ou será sempre verdadeira
+        return true;
     }
 } // namespace ADC

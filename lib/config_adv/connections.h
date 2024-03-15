@@ -8,7 +8,7 @@
 #define PASSWORD0 "AAB_DEV1"
 #define PASSWORD1 "meunomeInteiroTudojunto"
 #define PASSWORD2 "meunomeInteiroTudojunto"
-#define PASSWORD3 "meunomeinteirotudojunto"
+#define PASSWORD3 "Meunomeinteirotudojunto"
 #define PASSWORD4 "meunomeinteirotudojunto"
 
 #define MQTT_URI "20.127.210.50"
@@ -23,6 +23,7 @@
 #define MQTT_TOPIC (char *)"pcd-meteor"
 #define MQTT_TOPIC_TO_SITE (char *)"pcd-meteor/site"
 
+#define MQTT_SUBTOPIC_OTA (char *)"/OTA"
 #define MQTT_SUBTOPIC_COMMAND (char *)"/command"
 #define MQTT_SUBTOPIC_STATUS (char *)"/status"
 #define MQTT_SUBTOPIC_BATTERY (char *)"/battery"

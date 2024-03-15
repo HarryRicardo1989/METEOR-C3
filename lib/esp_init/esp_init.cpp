@@ -6,9 +6,9 @@ WiFiManager *wifi = nullptr;
 PROTOCOL::MqttInit *mqtt_initialize = nullptr;
 PROTOCOL::I2c *i2c = nullptr;
 OLED *oledDisplay = nullptr;
-void esp_init_from_touch(void)
-{
 
+void init(void)
+{
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
     {
@@ -18,13 +18,35 @@ void esp_init_from_touch(void)
     ESP_ERROR_CHECK(ret);
     if (esp_reset_reason() == ESP_RST_DEEPSLEEP)
     {
+        printf("\n\nACORDEI\n\n");
+
         deisolate_gpio();
     }
+    int updateStatus = read_nvs_int8_var(UPDATE_STATUS);
+    if (updateStatus != 0 && updateStatus != 1)
+    {
+        save_nvs_int8_var(UPDATE_STATUS, 0);
+    }
+}
+void init_routines(void)
+{
     battery_things();
-
     generate_client_ID();
 
-    // scanI2CDevices(SDA_PIN, SCL_PIN);
+    init_i2c();
+    capture_data();
+    tryConnectToWiFi();
+
+    if (wifi->isConnected())
+    {
+        esp_ip4_addr_t ip = wifi->getIP();
+        ESP_LOGW("WIFI-STATUS", "Connected at IP: %d.%d.%d.%d", IP2STR(&ip));
+        mqtt_initialize->connect();
+        blink_led_custom(0, 100, 0, 20, 50, 1);
+        mqtt_initialize->subscribe();
+        blink_led_custom(100, 100, 100, 20, 50, 3);
+        mqtt_task_pub_init();
+    }
 }
 void capture_data(void)
 {
@@ -37,12 +59,13 @@ void capture_data(void)
     float i2cPressure;
     int i2cHumidity;
     float i2cDewPoint;
-    // int i2cId;
-    // i2cId = bme280i2c.GetDeviceID();
     bme280i2c.GetAllResults(&i2cTemperature, &i2cHumidity, &i2cPressure, &i2cDewPoint);
     int bat_level = read_nvs_int8_var(BATTERY_PERCENT_VALUE);
     uint32_t bat_mv = read_nvs_uint32_var(BATTERY_VALUE);
-
+    save_nvs_string_var(TEMPERATURE, convert_float_to_string(i2cTemperature));
+    save_nvs_string_var(HUMIDITY, convert_value_to_string(i2cHumidity));
+    save_nvs_string_var(PRESSURE, convert_float_to_string(i2cPressure));
+    save_nvs_string_var(DEWPOINT, convert_float_to_string(i2cDewPoint));
     display_meteor(i2cTemperature, i2cPressure, i2cHumidity, i2cDewPoint, bat_level, bat_mv);
 }
 
@@ -64,17 +87,19 @@ void scanI2CDevices(int sdaPin, int sclPin)
 
 void tryConnectToWiFi(void)
 {
-    const char *ssids[] = {SSID2, SSID3, SSID4, SSID1, SSID0};
-    const char *passwords[] = {PASSWORD2, PASSWORD3, PASSWORD4, PASSWORD1, PASSWORD0};
+    const char *ssids[] = {SSID3, SSID1};
+    const char *passwords[] = {PASSWORD3, PASSWORD1};
+    wifi = new WiFiManager();
+    mqtt_initialize = new PROTOCOL::MqttInit();
 
     for (int i = 0; i < 5; i++)
     {
         wifi->connect(ssids[i], passwords[i]);
         int attempt = 0;
-        while (!wifi->isConnected() && attempt < 4)
+        while (!wifi->isConnected() && attempt < 30)
         { // Tenta até 10 vezes para cada rede
             ESP_LOGW("WIFI-STATUS", "Attempting to connect to %s", ssids[i]);
-            vTaskDelay(40 * portTICK_PERIOD_MS);
+            vTaskDelay(100 * portTICK_PERIOD_MS);
             attempt++;
             blink_led_custom(50, 0, 50, 30, 50, 1);
         }
@@ -209,7 +234,38 @@ void display_meteor(float temperature, float pressure, int humidity, float i2cDe
     oledDisplay->displayTextBuffered(buffer, 0, 56);
 
     oledDisplay->updateDisplay();
+}
 
-    // vTaskDelay(5 * PORT_TICK_PERIOD_SECONDS);
-    //  oledDisplay->displaySleep();
+void otaInit(void)
+{
+    char buffer[30];
+    ESP_LOGW("WIFI-STATUS", "passou 1");
+    tryConnectToWiFi();
+    ESP_LOGW("WIFI-STATUS", "passou 2");
+
+    if (wifi->isConnected())
+    {
+        ESP_LOGW("WIFI-STATUS", "passou 3");
+        esp_ip4_addr_t ip = wifi->getIP();
+        ESP_LOGW("WIFI-STATUS", "Connected at IP: %d.%d.%d.%d", IP2STR(&ip));
+        init_i2c();
+        oledDisplay->init();
+        oledDisplay->displayWakeUp();
+        oledDisplay->initScreenBuffer();
+
+        sprintf(buffer, "Updating!");
+        oledDisplay->displayTextBuffered(buffer, 20, 24);
+        OtaUpdate otaUpdater;
+        oledDisplay->updateDisplay();
+
+        otaUpdater.start(read_nvs_string_var(OTA_URL));
+        sprintf(buffer, "Update success!");
+        oledDisplay->displayTextBuffered(buffer, 10, 24);
+        oledDisplay->updateDisplay();
+        vTaskDelay(1 * PORT_TICK_PERIOD_SECONDS);
+
+        oledDisplay->displayClear();
+        oledDisplay->displaySleep();
+        esp_restart();
+    }
 }

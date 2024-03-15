@@ -26,9 +26,12 @@
 #include "I2C/cppi2c.h"
 #include "bme280/bme280_common.hpp"
 #include "battery.hpp"
+#include "OTA/OtaUpdate.hpp"
+#include "mqtt_task.hpp"
 
-void esp_init_from_touch(void);
-void esp_init_from_timer(void);
+void init(void);
+void init_routines(void);
+
 void generate_client_ID(void);
 void scanI2CDevices(int sdaPin, int sclPin);
 char *convert_value_to_string(int value);
@@ -38,3 +41,4 @@ void init_i2c(void);
 void tryConnectToWiFi(void);
 void display_meteor(float temperature, float pressure, int humidity, float i2cDewPoint, int battery_level, u_int32_t battery_voltage);
 void capture_data(void);
+void otaInit(void);

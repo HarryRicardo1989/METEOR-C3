@@ -14,7 +14,7 @@ WiFiManager::WiFiManager()
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &eventHandler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &eventHandler, NULL));
-    ESP_LOGE("WiFiManager", "Constructor");
+    ESP_LOGI("WiFiManager", "Constructor");
 }
 
 WiFiManager::~WiFiManager()
@@ -23,7 +23,7 @@ WiFiManager::~WiFiManager()
     ESP_ERROR_CHECK(esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &eventHandler));
     esp_wifi_stop();
     esp_wifi_deinit();
-    ESP_LOGE("WiFiManager", "Destructor");
+    ESP_LOGI("WiFiManager", "Destructor");
 }
 
 void WiFiManager::connect(const char *ssid, const char *password)
@@ -34,14 +34,14 @@ void WiFiManager::connect(const char *ssid, const char *password)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_LOGW("WiFiManager", "Connecting");
+    ESP_LOGI("WiFiManager", "Connecting");
 }
 
 void WiFiManager::disconnect()
 {
-    ESP_LOGW("WiFiManager", "Disconnect");
+    ESP_LOGI("WiFiManager", "Disconnect");
     esp_wifi_disconnect();
-    ESP_LOGW("WiFiManager", "Disconnected");
+    ESP_LOGI("WiFiManager", "Disconnected");
 }
 
 esp_ip4_addr_t WiFiManager::getIP()

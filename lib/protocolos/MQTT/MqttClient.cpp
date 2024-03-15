@@ -36,7 +36,7 @@ namespace PROTOCOL
     void MqttClient::connect()
     {
         ESP_LOGI("MqttClient", "try to start");
-        esp_mqtt_client_register_event(client, static_cast<esp_mqtt_event_id_t>(ESP_EVENT_ANY_ID), mqtt_event_handler, client);
+        esp_mqtt_client_register_event(client, static_cast<esp_mqtt_event_id_t>(ESP_EVENT_ANY_ID), MqttClient::mqtt_event_handler, this);
         esp_mqtt_client_start(this->client);
         ESP_LOGI("MqttClient", "started");
     }
@@ -53,7 +53,7 @@ namespace PROTOCOL
     void MqttClient::subscribe(const char *topic)
     {
         ESP_LOGI("MqttClient", "try to subscribe");
-        esp_mqtt_client_subscribe(client, topic, 0);
+        esp_mqtt_client_subscribe(client, topic, 2);
         ESP_LOGI("SUBSCRIBE", "%s", topic);
     }
 
@@ -67,15 +67,20 @@ namespace PROTOCOL
     {
         esp_mqtt_client_publish(client, topic, data, 0, qos, retain);
     }
-
+    void MqttClient::concat_string(char *resultado, char *str1, char *str2)
+    {
+        strcpy(resultado, str1); // Copia a primeira string para o resultado
+        strcat(resultado, str2); // Concatena a segunda string ao resultado
+    }
     void MqttClient::mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
     {
+        MqttClient *instance = static_cast<MqttClient *>(handler_args);
         ESP_LOGI("mqtt_event_handler", "in");
 
         switch (event_id)
         {
         case MQTT_EVENT_CONNECTED:
-            ESP_LOGI(TAG, "Connected to MQTT broker");
+            ESP_LOGI("MQTT_EVENT", "Connected to MQTT broker");
             break;
 
         case MQTT_EVENT_SUBSCRIBED:
@@ -84,7 +89,7 @@ namespace PROTOCOL
             if (event_handle != nullptr && event_handle->topic != nullptr)
             {
 
-                ESP_LOGI(TAG, "Subscribed to topic '%s'", event_handle->topic);
+                ESP_LOGI("MQTT_EVENT", "Subscribed to topic '%s'", event_handle->topic);
             }
             break;
         }
@@ -101,15 +106,25 @@ namespace PROTOCOL
                     received_data[data_len] = '\0'; // Adiciona o caractere nulo ao final da string
 
                     // Agora 'received_data' contém os dados recebidos do tópico
-                    ESP_LOGI(TAG, "Received data on topic '%s'", received_data);
+                    ESP_LOGI("MQTT_EVENT", "Received data on topic '%s'", received_data);
                     if (strcmp(received_data, "vairfactory") == 0)
                     {
                         ESP_LOGW("FACTORY", "Factory Default");
-                        
                     }
                     else
                     {
+
                         ESP_LOGW("COMMAND", "%s", received_data);
+                        save_nvs_int8_var(UPDATE_STATUS, true);
+                        save_nvs_string_var(OTA_URL, received_data);
+                        ESP_LOGW("UPDATE_STATUS", "true");
+                        char *client_ID = read_nvs_string_var(CLIENT_ID);
+                        char *topic = new char[100];
+                        instance->concat_string(topic, client_ID, MQTT_SUBTOPIC_OTA);
+                        instance->publish(topic, (char *)"", 2, true);
+
+                        vTaskDelay(3 * PORT_TICK_PERIOD_SECONDS);
+                        esp_restart();
                     }
                     // Lembre-se de liberar a memória alocada quando não precisar mais
                     free(received_data);
@@ -118,8 +133,6 @@ namespace PROTOCOL
         }
 
         break;
-
-            // Adicione outros casos de tratamento de eventos conforme necessário
 
         default:
             break;
