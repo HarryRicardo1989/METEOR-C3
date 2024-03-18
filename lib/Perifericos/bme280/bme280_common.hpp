@@ -4,6 +4,7 @@
 #include "freertos/task.h"
 #include "I2C/cppi2c.h"
 #include <cmath>
+
 namespace CPPBME280
 {
     class BME280
@@ -143,8 +144,11 @@ namespace CPPBME280
         esp_err_t SetMode(const uint8_t mode);                 // ctrl_meas bits 1, 0
         esp_err_t SetCtrlHum(const int humididtyOversampling); // ctrl_hum bits 2, 1, 0    page 28
         esp_err_t GetAllResults(BME280ResultData *results);
-        esp_err_t GetAllResults(float *temperature, int *humidity, float *pressure, float *dew_point);
+        esp_err_t GetAllResults(float *temperature, int *humidity, float *pressure, float *dew_point, float *altitude);
         float GetTemperature(void); // Preferable to use GetAllResults()
+        float GetAltitude(float temperatureCelsius, float pressureHpa);
+        float GetAltitudeWithHumidity(float temperatureCelsius, float pressureHpa, float relativeHumidity);
+
         float GetPressure(void);
         int GetHumidity(void);
         float getDewPointTemperature(void);

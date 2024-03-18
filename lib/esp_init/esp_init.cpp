@@ -57,16 +57,20 @@ void capture_data(void)
     bme280i2c.SetConfigFilter(1);
     float i2cTemperature;
     float i2cPressure;
-    int i2cHumidity;
     float i2cDewPoint;
-    bme280i2c.GetAllResults(&i2cTemperature, &i2cHumidity, &i2cPressure, &i2cDewPoint);
+    int i2cHumidity;
+    float i2cAltitude;
+    // int i2cId;
+    // i2cId = bme280i2c.GetDeviceID();
+    bme280i2c.GetAllResults(&i2cTemperature, &i2cHumidity, &i2cPressure, &i2cDewPoint, &i2cAltitude);
     int bat_level = read_nvs_int8_var(BATTERY_PERCENT_VALUE);
     uint32_t bat_mv = read_nvs_uint32_var(BATTERY_VALUE);
     save_nvs_string_var(TEMPERATURE, convert_float_to_string(i2cTemperature));
     save_nvs_string_var(HUMIDITY, convert_value_to_string(i2cHumidity));
     save_nvs_string_var(PRESSURE, convert_float_to_string(i2cPressure));
-    save_nvs_string_var(DEWPOINT, convert_float_to_string(i2cDewPoint));
-    display_meteor(i2cTemperature, i2cPressure, i2cHumidity, i2cDewPoint, bat_level, bat_mv);
+    save_nvs_string_var(ALTITUDE, convert_float_to_string(i2cAltitude));
+
+    display_meteor(i2cTemperature, i2cPressure, i2cHumidity, i2cDewPoint, bat_level, bat_mv, i2cAltitude);
 }
 
 void scanI2CDevices(int sdaPin, int sclPin)
@@ -210,28 +214,35 @@ void init_i2c(void)
     oledDisplay->initScreenBuffer();
 }
 
-void display_meteor(float temperature, float pressure, int humidity, float i2cDewPoint, int battery_level, u_int32_t battery_voltage)
+void display_meteor(float temperature, float pressure, int humidity, float i2cDewPoint, int battery_level, u_int32_t battery_voltage, float altitude)
 {
     char buffer[30]; // Buffer para armazenar o texto formatado
+
+    oledDisplay->init();
+    oledDisplay->displayWakeUp();
+    oledDisplay->initScreenBuffer();
 
     oledDisplay->displayTextBuffered("*METEOR*", 10, 0);
     sprintf(buffer, "%d%%", battery_level); // Formata o nível da bateria
     oledDisplay->displayTextBuffered(buffer, 95, 0);
 
-    sprintf(buffer, "Temp: %2.2fC", temperature); // Formata a temperatura
+    sprintf(buffer, "Temp: %.2fC", temperature); // Formata a temperatura
     oledDisplay->displayTextBuffered(buffer, 0, 16);
 
     sprintf(buffer, "Humid: %d%%", humidity); // Formata a umidade
     oledDisplay->displayTextBuffered(buffer, 0, 24);
 
-    sprintf(buffer, "Press: %4.2fhPa", pressure); // Formata a pressão
+    sprintf(buffer, "Press: %.2fhPa", pressure); // Formata a pressão
     oledDisplay->displayTextBuffered(buffer, 0, 32);
 
-    sprintf(buffer, "DewP: %2.2fC", i2cDewPoint); // Formata o ponto de orvalho
+    sprintf(buffer, "DewP: %.2fC", i2cDewPoint); // Formata o ponto de orvalho
     oledDisplay->displayTextBuffered(buffer, 0, 40);
 
+    sprintf(buffer, "Alt: %.2fm", altitude); // Formata o ponto de altitude
+    oledDisplay->displayTextBuffered(buffer, 0, 48);
+
     sprintf(buffer, "Bat: %ldmV", battery_voltage); // Formata a tensao da bateria
-    oledDisplay->displayTextBuffered(buffer, 0, 56);
+    oledDisplay->displayTextBuffered(buffer, 10, 56);
 
     oledDisplay->updateDisplay();
 }

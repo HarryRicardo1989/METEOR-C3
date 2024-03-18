@@ -39,6 +39,7 @@ char *convert_float_to_string(float value);
 void battery_things(void);
 void init_i2c(void);
 void tryConnectToWiFi(void);
-void display_meteor(float temperature, float pressure, int humidity, float i2cDewPoint, int battery_level, u_int32_t battery_voltage);
+void display_meteor(float temperature, float pressure, int humidity, float i2cDewPoint, int battery_level, u_int32_t battery_voltage, float altitude);
+
 void capture_data(void);
 void otaInit(void);

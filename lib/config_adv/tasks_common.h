@@ -69,6 +69,7 @@
 #define MODEL (char *)"model"
 #define HUMIDITY (char *)"humidity"
 #define PRESSURE (char *)"pressure"
+#define ALTITUDE (char *)"altitude"
 #define DEWPOINT (char *)"dewPoint"
 #define UPDATE_STATUS (char *)"updateStatus"
 #define OTA_URL (char *)"otaUrl"

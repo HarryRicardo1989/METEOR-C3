@@ -298,7 +298,7 @@ namespace CPPBME280
         return status;
     }
 
-    esp_err_t BME280::GetAllResults(float *temperature, int *humidity, float *pressure, float *dew_point)
+    esp_err_t BME280::GetAllResults(float *temperature, int *humidity, float *pressure, float *dew_point, float *altitude)
     {
 
         esp_err_t status = ESP_OK;
@@ -314,7 +314,7 @@ namespace CPPBME280
         *humidity = compensateHumidity(resultRaw.humididty);
         *pressure = compensatePressure(resultRaw.pressure);
         *dew_point = getDewPointTemperature();
-
+        *altitude = GetAltitudeWithHumidity(compensateTemp(resultRaw.temperature), compensatePressure(resultRaw.pressure), compensateHumidity(resultRaw.humididty));
         return status;
     }
 
@@ -398,5 +398,28 @@ namespace CPPBME280
     {
         i2c = i_i2c;
         _devAddress = dev_addr;
+    }
+
+    float BME280::GetAltitude(float temperatureCelsius, float pressureHpa)
+    {
+        const float P0 = 1013.25; // Pressão ao nível do mar em hPa
+        const float n = 5.255;    // Constante para modelo atmosférico
+        const float temperatureKelvin = temperatureCelsius + 273.15;
+        const float gradient = 0.0065; // Gradiente de temperatura em K/m
+
+        float altitude = (1 - pow(pressureHpa / P0, 1 / n)) * (temperatureKelvin / gradient);
+        return altitude;
+    }
+
+    float BME280::GetAltitudeWithHumidity(float temperatureCelsius, float pressureHpa, float relativeHumidity)
+    {
+        const float P0 = 1013.25; // Pressão ao nível do mar em hPa
+        const float n = 5.255;    // Constante para o modelo atmosférico
+        const float temperatureKelvin = temperatureCelsius + 273.15;
+        const float gradient = 0.0065; // Gradiente de temperatura em K/m
+        const float humidityAdjustmentFactor = 1.0 - (relativeHumidity / 100.0) * 0.02;
+        float altitude = (1 - std::pow(pressureHpa / P0, 1 / n)) * (temperatureKelvin / gradient);
+        altitude *= humidityAdjustmentFactor; // Ajustando a altitude com base na umidade.
+        return altitude;
     }
 } // namespace CPPBME280

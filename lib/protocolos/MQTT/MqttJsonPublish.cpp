@@ -20,6 +20,7 @@ namespace PROTOCOL
                 char *humidity = 0;
                 char *timestamp = 0;
                 char *dewpoint = 0;
+                char *altitude = 0;
             } event;
             struct battery_info
             {
@@ -40,6 +41,7 @@ namespace PROTOCOL
         client.event.pressure = read_nvs_string_var(PRESSURE);
         client.event.humidity = read_nvs_string_var(HUMIDITY);
         client.event.dewpoint = read_nvs_string_var(DEWPOINT);
+        client.event.altitude = read_nvs_string_var(ALTITUDE);
         client.battery_info.battery_voltage = read_nvs_uint32_var(BATTERY_VALUE);
         client.battery_info.battery_level = read_nvs_int8_var(BATTERY_PERCENT_VALUE);
         client.battery_info.battery_charging = read_nvs_int8_var(BATTERY_CHARGING_STATUS);
@@ -60,6 +62,7 @@ namespace PROTOCOL
         cJSON_AddItemToObject(eventJson, "pressure", cJSON_CreateString(client.event.pressure));
         cJSON_AddItemToObject(eventJson, "humidity", cJSON_CreateString(client.event.humidity));
         cJSON_AddItemToObject(eventJson, "dewpoint", cJSON_CreateString(client.event.dewpoint));
+        cJSON_AddItemToObject(eventJson, "altitude", cJSON_CreateString(client.event.altitude));
         cJSON_AddItemToObject(eventJson, "timestamp", cJSON_CreateString(client.event.timestamp));
 
         cJSON_AddItemToObject(infoJson, "manufactory", cJSON_CreateString(client.device_info.manufactory));
