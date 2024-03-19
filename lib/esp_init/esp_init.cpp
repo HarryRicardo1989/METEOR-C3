@@ -218,10 +218,6 @@ void display_meteor(float temperature, float pressure, int humidity, float i2cDe
 {
     char buffer[30]; // Buffer para armazenar o texto formatado
 
-    oledDisplay->init();
-    oledDisplay->displayWakeUp();
-    oledDisplay->initScreenBuffer();
-
     oledDisplay->displayTextBuffered("*METEOR*", 10, 0);
     sprintf(buffer, "%d%%", battery_level); // Formata o nível da bateria
     oledDisplay->displayTextBuffered(buffer, 95, 0);
